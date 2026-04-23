@@ -8,6 +8,8 @@ const Login = () => {
     password: '',
   });
   const [error, setError] = useState('');
+  const [statusMessage, setStatusMessage] = useState('');
+  const [loading, setLoading] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
 
@@ -16,14 +18,40 @@ const Login = () => {
   const onChange = (e) =>
     setFormData({ ...formData, [e.target.name]: e.target.value });
 
+  const getLoginError = (err) => {
+    if (err.response) {
+      if (err.response.status === 401) {
+        return 'Invalid email or password. Please try again.';
+      }
+      return err.response.data?.message || 'Server error. Please try again later.';
+    }
+
+    if (err.code === 'ECONNABORTED') {
+      return 'The server is taking too long to respond. Please wait a moment and try again.';
+    }
+
+    return 'Backend is not reachable. Please check your connection or wait a moment.';
+  };
+
   const onSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    setStatusMessage('');
+    setLoading(true);
+
+    const wakeupTimer = window.setTimeout(() => {
+      setStatusMessage('Server is waking up, please wait...');
+    }, 1800);
+
     try {
       await login(email, password);
       navigate('/dashboard');
     } catch (err) {
-      setError(err.response?.data?.message || 'Login failed. Please check your credentials.');
+      setError(getLoginError(err));
+    } finally {
+      clearTimeout(wakeupTimer);
+      setLoading(false);
+      setStatusMessage('');
     }
   };
 
@@ -35,6 +63,12 @@ const Login = () => {
       </p>
 
       {error && <div className="error-msg">{error}</div>}
+      {statusMessage && (
+        <div className="login-status">
+          <span className="loader" />
+          <p>{statusMessage}</p>
+        </div>
+      )}
 
       <form onSubmit={onSubmit}>
         <div className="input-group">
@@ -47,6 +81,7 @@ const Login = () => {
             onChange={onChange}
             placeholder="john@example.com"
             required
+            disabled={loading}
           />
         </div>
 
@@ -60,10 +95,13 @@ const Login = () => {
             onChange={onChange}
             placeholder="••••••••"
             required
+            disabled={loading}
           />
         </div>
 
-        <button type="submit" className="primary">Sign In</button>
+        <button type="submit" className="primary" disabled={loading}>
+          {loading ? 'Signing in...' : 'Sign In'}
+        </button>
       </form>
 
       <div className="auth-footer">

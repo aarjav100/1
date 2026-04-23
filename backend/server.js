@@ -14,6 +14,14 @@ app.use(express.json());
 app.use(cors());
 
 // Routes
+app.get('/health', (req, res) => {
+  res.status(200).json({
+    status: 'ok',
+    uptime: process.uptime(),
+    timestamp: new Date().toISOString(),
+  });
+});
+
 app.use('/api', studentRoutes);
 app.use('/api/grievances', grievanceRoutes);
 

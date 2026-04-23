@@ -1,5 +1,5 @@
 import { createContext, useState, useEffect, useContext } from 'react';
-import api from '../api/axios';
+import api, { requestWithRetry } from '../api/axios';
 
 const AuthContext = createContext();
 
@@ -32,14 +32,18 @@ export const AuthProvider = ({ children }) => {
   };
 
   const login = async (email, password) => {
-    const response = await api.post('/login', { email, password });
+    const response = await requestWithRetry(
+      () => api.post('/login', { email, password })
+    );
     localStorage.setItem('token', response.data.token);
     setUser(response.data);
     return response.data;
   };
 
   const register = async (userData) => {
-    const response = await api.post('/register', userData);
+    const response = await requestWithRetry(
+      () => api.post('/register', userData)
+    );
     localStorage.setItem('token', response.data.token);
     setUser(response.data);
     return response.data;
