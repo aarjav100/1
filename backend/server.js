@@ -3,6 +3,7 @@ import dotenv from 'dotenv';
 import cors from 'cors';
 import mongoose from 'mongoose';
 import studentRoutes from './routes/studentRoutes.js';
+import grievanceRoutes from './routes/grievanceRoutes.js';
 
 dotenv.config();
 
@@ -14,6 +15,7 @@ app.use(cors());
 
 // Routes
 app.use('/api', studentRoutes);
+app.use('/api/grievances', grievanceRoutes);
 
 // Database connection
 const PORT = process.env.PORT || 5000;
